@@ -3,17 +3,13 @@ import functools
 from datetime import datetime  # Required import
 
 # Decorator to log SQL queries
-def log_queries(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        query = kwargs.get('query') or (args[0] if args else None)
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        if query:
-            print(f"[{timestamp}] Executing SQL query: {query}")  # Required print
-        else:
-            print(f"[{timestamp}] No SQL query found.")
-        return func(*args, **kwargs)
+def log_queries(fn):
+    @functools.wraps(fn)
+    def wrapper(query):
+        print(query)
+        fn(query)
     return wrapper
+
 
 @log_queries
 def fetch_all_users(query):
