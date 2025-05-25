@@ -1,38 +1,39 @@
 import sqlite3
 import functools
-import logging
+from datetime import datetime
 
-# Set up basic logging configuration
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("DB_QUERY_LOGGER")
+#### Decorator to log SQL queries
 
 def log_queries(func):
     """
-    Decorator that logs SQL queries before executing them.
-    
-    Args:
-        func: The function to be decorated
-        
-    Returns:
-        A wrapped function that logs the query before execution
+    Decorator that logs SQL queries before execution
+    this decorator acts like a spy taht watches and reports what SQL
+    queries are being executed by any function
     """
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        # Extract the query from either positional or keyword arguments
-        query = args[0] if args else kwargs.get('query', '')
-        
-        # Log the query before execution
-        logger.info(f"Executing query: {query}")
-        
-        try:
-            # Execute the original function
-            result = func(*args, **kwargs)
-            logger.info("Query executed successfully")
-            return result
-        except Exception as e:
-            logger.error(f"Query failed with error: {str(e)}")
-            raise
-    
+        # Extraact the query from function arguments
+        # We look for the 'query' in the function's inputs
+
+        # Check if 'query' is in keyword arguments
+        if 'query' in kwargs:
+            query = kwargs['query']
+        # Check if 'query' is in positional arguments (assuming it's the first one)
+        elif args and len(args) > 0:
+            # For this specific case, we know query is passed as first argument
+            query = args[0] if isinstance(args[0], str) else None
+        else:
+            query = "Unknown query"
+
+        # Log the query
+        # Write down what SQL command we're about to run
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{timestamp}] Executing query: {query}")
+
+        # Call the original function
+        return func(*args, **kwargs)
+
     return wrapper
 
 @log_queries
